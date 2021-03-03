@@ -17,12 +17,9 @@ public class BattleManager : MonoBehaviour
 		return instance;
 	}
 
-	//[SerializeField] private Transform battleCharacter;
-	//[SerializeField] private Transform enemyBattleCharacter;
 	[SerializeField] private PlayerManager playerManager;
 	[SerializeField] private EnemyManager enemyManager;
-	//public Texture2D playerSpriteSheet;
-	//public Texture2D enemySpriteSheet;
+
 	public List<Slider> sliders;
 	public List<Text> nameTexts;
 	public List<Text> hpTexts;
@@ -50,69 +47,10 @@ public class BattleManager : MonoBehaviour
 
 		game = FindObjectOfType<GameData>();
 
-		//// Player setup, maybe change it to the current player list in the battle..
-		//foreach (var text in nameTexts)
-		//{
-		//	foreach (var player in game.playerManager.playerCharacters)
-		//	{
-		//		if (player.nameText == null)
-		//		{
-		//			player.nameText = text;
-		//			player.nameText.text = player.stats.name;
-		//			player.nameText.gameObject.SetActive(true);
-		//			break;
-		//		}
-		//	}
-		//}
-
-		//foreach (var text in hpTexts)
-		//{
-		//	foreach (var player in game.playerManager.playerCharacters)
-		//	{
-		//		if (player.hpText == null)
-		//		{
-		//			player.hpText = text;
-		//			player.hpText.text = player.stats.hp + "/" + player.stats.maxHp;
-		//			player.hpText.gameObject.SetActive(true);
-		//			break;
-		//		}
-		//	}
-		//}
-
-		//foreach (var slider in sliders)
-		//{
-		//	foreach (var player in game.playerManager.playerCharacters)
-		//	{
-		//		if (player.slider == null)
-		//		{
-		//			player.slider = slider;
-		//			player.slider.maxValue = player.stats.maxHp;
-		//			player.slider.value = player.stats.hp;
-		//			player.slider.gameObject.SetActive(true);
-		//			break;
-		//		}
-		//	}
-		//}
-
-		//foreach (var slider in playerTimerSliders)
-		//{
-		//	foreach (var player in game.playerManager.playerCharacters)
-		//	{
-		//		if (player.slider == null)
-		//		{
-		//			player.slider = slider;
-		//			player.slider.maxValue = player.stats.maxHp;
-		//			player.slider.value = player.stats.hp;
-		//			player.slider.gameObject.SetActive(true);
-		//			break;
-		//		}
-		//	}
-		//}
-
 		Scene currentStoryScene = SceneManager.GetSceneByBuildIndex(game.currentStorySceneNumber);
 		foreach (var s in currentStoryScene.GetRootGameObjects())
 		{
-			playerManager = game.playerManager;//s.GetComponentInChildren<PlayerManager>();
+			playerManager = game.playerManager;
 
 			//Find all enemies on the current scene and load who is being attacked.
 			//This could take awhile on big maps....
@@ -238,6 +176,8 @@ public class BattleManager : MonoBehaviour
 		EnqueueNextEnemyToAttack();
 
 		UpdateUI();
+
+		CheckForWinOrLose();
 	}
 
 	private void Setup()
@@ -436,10 +376,43 @@ public class BattleManager : MonoBehaviour
 		foreach (var s in storyScene.GetRootGameObjects())
 		{
 			s.SetActive(true);
+
+			//Find each enemy in the story and set them to not being attacked anymore.
+			foreach (var enemy in s.GetComponentsInChildren<EnemyManager>())
+			{
+				enemy.beingAttacked = false;
+			}
+
 		}
 		//Time.timeScale = 1;
 		game.currentBattleSceneNumber = 0; // Set battle number to default 0.
 		SceneManager.UnloadSceneAsync("BattleScene");
 		Destroy(gameObject);
+	}
+
+	private void CheckForWinOrLose()
+	{
+		//lose
+		if (playerBattleCharacters.All(c => c.GetComponent<BattleHandler>().stats.dead))
+		{
+			Debug.Log("you dead");
+		}
+
+		//win
+		if (enemyBattleCharacters.All(c => c.GetComponent<BattleHandler>().stats.dead))
+		{
+			Debug.Log("victory");
+
+			// Grab total enemy exp and give to players in battle.
+			var totalExp = enemyBattleCharacters.Select(e => e.GetComponent<BattleHandler>().stats.exp).Sum();
+			foreach(var player in playerBattleCharacters)
+			{
+				var playerBattleHandler = player.GetComponent<BattleHandler>();
+				playerBattleHandler.stats.CheckForLevelUp(totalExp);
+			}
+
+			// Prob do some victory screen type stuff before this in the future..
+			Resume();
+		}
 	}
 }

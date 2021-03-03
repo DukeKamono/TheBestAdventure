@@ -19,6 +19,14 @@ public class PlayerCharacter
 		location = 0;
 	}
 
+	//public void CheckForLevelUp()
+	//{
+	//	if(stats.exp >= stats.expToNextLevel)
+	//	{
+	//		stats.LevelUp();
+	//	}
+	//}
+
 	//public Transform SpawnBattleCharacter(bool isOnRight, Transform battleManagerTransform)
 	//{
 	//	Vector3 startingPosition;

@@ -14,10 +14,10 @@ public class StartGame : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-		if (Input.GetKey(KeyCode.Return))
-		{
-			SceneManager.LoadScene(1);
-		}
+		//if (Input.GetKey(KeyCode.Return))
+		//{
+		//	SceneManager.LoadScene(1);
+		//}
 	}
 
 	private void OnMouseDown()
